@@ -15,10 +15,10 @@
 
 ## Technologies Used
 
---Jquery for Dom Manipulation
---JavaScript for functionality
+-Jquery for Dom Manipulation
+-JavaScript for functionality
 
-##Code Explanation
+## Code Explanation
 
 - I first created a document ready function to hide the questions and score until the user has pressed "Start Quiz".
 - Once the user presses the start button, the 1st question appeares along with the timer
