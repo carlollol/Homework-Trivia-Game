@@ -4,7 +4,7 @@ $(document).ready(function(){
 $('#startBtn').on("click", function() {;
 	$('#startBtn').hide();
 	$('.main').append($('<div>', {id: "triviaGame"}));
-	displayQuestion(); // Loads the questions in
+	displayQuestion(0); // Loads the questions in
 })
 
 var questions = [{
@@ -40,39 +40,53 @@ var questions = [{
 var questionCount = 0; //tracks the number of question
 var selection = []; // contains the choices
 var trivia = $('#triviaGame'); //trivia div object
+var sTime = new Date().getTime();
+var countDown = 15;
+var counter = null;
 
-$('#submit').on('click', function() {
-	e.preventDefault();
-
-	if (trivia.is(':animated')){
-		return false;
-	}
-
-	choose();
-
-	if (isNaN(selection[questionCount])) {
-		alert('Please choose an answer!');
-	} else {
-		questionCount++;
-		displayNext();
-	}
-});
 
 // Creates and returns the div that contains the question and choices
 displayQuestion = function(x) {
-	for (var x = 0; x < questions.length; x++) {
-		console.log(questions[x].qNum);
-	$('#triviaGame').append($('<h2>', {id: "questions" appendTo: this}));
-	var triviaElement = $('#questions');
-	var header = $('<h2>Question ' + (questions[x].qNum) + '</h2>');
-	triviaElement.append(header);
-	var question = $('<p>').append(questions[x].question);
-	triviaElement.append(question);
-	var answers = createSelection();
-	triviaElement.append(answers);
-	var submitBtn = $('<button>',{id:'submit'});
-	triviaElement.append(submitBtn);
-	$('#submit').html('Submit');
+
+	//set countdown 
+	$("#countdown").show();
+    $("#aftercount").hide();
+
+	setTimer(20);
+
+	//remove the first question from the array 
+	var currentQ = questions[x];
+	var parentElem = $("#triviaGame");
+	if(currentQ){
+		var header = $('<h2>Question ' + (currentQ.qNum+1) + '</h2>');
+		parentElem.append(header);
+		var question = $('<p>').append(currentQ.question);
+		parentElem.append(question);
+		var answers = createSelection(x);
+		parentElem.append(answers);
+		var submitBtn = $('<button>',{id:'submit'});
+		parentElem.append(submitBtn);
+		$('#submit').html('Submit');
+
+		$('#submit').on('click', function(e) {
+			e.preventDefault();
+			if(counter){
+				clearInterval(counter);
+			}
+			if (trivia.is(':animated')){
+				return false;
+			}
+
+			choose();
+
+			if (isNaN(selection[questionCount])) {
+				alert('Please choose an answer!');
+			} else {
+				questionCount++;
+				displayNext();
+			}
+		});	
+		
 	}
 }
 
@@ -81,16 +95,13 @@ createSelection = function(x) {
     var item;
     var id = '';
     var input = '';
-    for (var i = 0; i < questions[0].choices.length; i++) {
+    for (var i = 0; i < questions[x].choices.length; i++) {
       item = $('<li>');
       id = i+"-option";
-      input = '<input type="radio" id="'+id+'" name="selector" value=' + i + ' />';
-      // input += questions.q1.choices[i];
-      label = '<label for="'+id+'">' + questions[0].choices[i] + '</label>';
-      // checkBox = $('<div>', {class: 'check'});
+      input = '<input type="radio" id="'+id+'" name="answer" value=' + i + ' />';
+      label = '<label for="'+id+'">' + questions[x].choices[i] + '</label>';
       item.append(input);
       item.append(label);
-      // item.append(checkBox);
       answerList.append(item);
     }
     return answerList;
@@ -101,47 +112,110 @@ choose = function() {
  }
 
 displayNext = function() {
-	$('#triviaGame').remove();
-
+	$('#triviaGame').html('');
 	if (questionCount < questions.length){
-		var nextQuestion = displayQuestion(questionCount);
-		trivia.append(nextQuestion);
-		if (!(isNan(selection[questionCount]))) {
-			$('input[value='+selection[questionCount]+']').prop('checked', true);
-		}
+		displayQuestion(questionCount);
+	
+	}else {
+		displayResults();
 	}
 
-};
+}
 
+
+displayResults = function(){
+	$('#triviaGame').html('');
+	$('#countdown').remove();
+	$('#aftercount').remove();
+
+
+	var parentElem = $("#triviaGame");
+	var total = selection.length;
+	var numCorrect = 0;
+	selection.forEach(function(item, i){
+		if(item == questions[i].correctAnswer){
+			numCorrect++;
+		}
+	});
+
+	parentElem.append($('<h1>').append("Gameover!"));
+	parentElem.append($('<h2>').append("You Scored: " + numCorrect + "/" + total));
+	
+
+}
+
+setTimer = function() {
+	sTIme = new Date().getTime();
+
+	UpdateTime();
+	counter = setInterval(UpdateTime, 500);
+}
   
+UpdateTime = function() {
+	var cTime = new Date().getTime();
+	var diff = cTime - sTime;
+	var seconds = countDown - Math.floor(diff / 1000);
+	if (seconds >= 0) {
+		var minutes = Math.floor(seconds / 60);
+		seconds -= minutes * 60;
+		$("#minutes").text(minutes < 10 ? "0" + minutes : minutes);
+		$("#seconds").text(seconds < 10 ? "0" + seconds : seconds);  
+	} else {
+		$('#countdown').hide();
+		$('#aftercount').show();
+		clearInterval(counter);
+		timesUp();
 
-    //   for( var key in questions ){
-    // 	for (var i = 0; i < questions[ key ].choices.length; i++) {
-    //   		item = $('<li>');
-		  //   input = '<input type="radio" id="f-option" name="selector" value=' + i + ' />';
-		  //   input += questions[ key ].choices[i];
-		  //   label = '<label for="f-option" />';
-		  //   checkBox = $('<div>', {class: 'check'});
-		  //   item.append(input);
-		  //   item.append(label);
-		  //   item.append(checkBox);
-		  //   answerList.append(item);
-    // 	}
-    // }
-    // return answerList;
- // }
+	}
+}
+
+timesUp = function() {
+	if(counter) {
+		clearInterval(counter);
+
+	}
+	var parentElem = $('#triviaGame');
+	var nextBtn = null;
+	var seeResultsBtn = null;
+	//negative one means incorrect
+	selection.push(-1);
+
+	//remove submit button
+	$('#submit').remove();
+	if (selection.length != questions.length){
+		//add next button
+		nextBtn = $('<button>', {id: 'submit'});
+		nextBtn.html("Next");
+		parentElem.append(nextBtn);
+	} else{
+		//add 'see results' button
+		seeResultsBtn = $('<button>', {id:'submit'});
+		seeResultsBtn.html("See Results");
+		parentElem.append(seeResultsBtn);
+	}
 
 
-// var questions = [{
-// 	questions: "In FFXIII, who is Lightning's sister?",
-// 	choices: ["Vanille", "Fang", "Serah", "Tifa"],
-// 	correctAnswer:
-// }],
+	//disable radio buttons
+	$('input[name="answer"]').attr('disabled',true);
 
-// var numQuestions = 0; // question number
-// var selections = []; // Where the choices are contained
-// var quiz = $('#quiz'); // Quiz object
+	//add the click handler for next button
+	$('#submit').on('click', function(e) {
+		if(counter){
+			clearInterval(counter);
+		}
+		e.preventDefault();
 
-// displayNext();
+		if(selection.length != questions.length){
+			questionCount++;
+			displayNext();
+		}else{
+			displayResults();
+		}
+		
+		
+	});	
+}
+
+
 
 });
