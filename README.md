@@ -5,7 +5,7 @@
 + - https://carlollol.github.io/Homework-Trivia-Game/
 
 ## App Description
-- Press start and answer the question before time runs out. You can stop the music with the buttons at the bottom left. 
+- Press start and answer the question before time runs out.
 
 ## Requirements
 
