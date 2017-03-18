@@ -15,8 +15,8 @@
 
 ## Technologies Used
 
--Jquery for Dom Manipulation
--JavaScript for functionality
+- Jquery for Dom Manipulation
+- JavaScript for functionality
 
 ## Code Explanation
 
